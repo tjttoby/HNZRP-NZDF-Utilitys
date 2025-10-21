@@ -1,0 +1,31 @@
+<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+@bot.command()
+async def hello(ctx): # type: ignore
+    await ctx.send(f"Hi {ctx.author.mention}!") # type: ignore
+
+@bot.command(aliases=['gm', 'morning', 'sup'])
+async def goodmorning(ctx): # type: ignore
+    await ctx.send(f"Good morning, {ctx.author.mention}! \nHope you are haveing a amazing day \nToby's bot **OUT!**") # type: ignore
+
+@bot.command()
+async def sendembed(ctx): # type: ignore
+    embeded_message = discord.Embed(title="Yooooo I made a embed", description="Yay it worked if your reading it") # type: ignore
+    embeded_message.set_thumbnail(url=ctx.author.avatar) # type: ignore
+    embeded_message.add_field(name='Name of field', value='Value of field', inline=False) # type: ignore
+    embeded_message.set_image(url=ctx.guild.icon) # type: ignore
+    embeded_message.set_footer(text='Footer test', icon_url=ctx.author.avatar) # type: ignore
+    await ctx.send(embed=embeded_message) # type: ignore
+
+
+@bot.command()
+async def ping(ctx): # type: ignore
+    ping_embed = discord.Embed(title="Pong!", description="Latency in ms", color=discord.Color.orange()) # type: ignore
+    ping_embed.add_field(name=f"{bot.user.name}'s Latency (ms)", value=f"{round(bot.latency * 1000)}ms", inline=False) # type: ignore
+    ping_embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar) # type: ignore
+    await ctx.send(embed=ping_embed) # type: ignore
+
+
+    <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+    

@@ -1,0 +1,26 @@
+{ctx.author.mention} = mention (ping a user) that sent the command.
+ctx = Context.
+Welcome chanel: 
+    welcome_channel_id = member.guild.system_channel.id  # type: ignore
+
+
+
+________________
+COG START    
+    class FILE NAME(commands.Cog): # type: ignore
+    def __init__(self, bot): # type: ignore
+        self.bot = bot
+
+    @commands.Cog.listener() # type: ignore
+    async def on_ready(self):
+        print(f'⚙️ {__name__} Cog is online')
+
+SEND AT END OF COG
+    async def setup(bot): # type: ignore
+    await bot.add_cog(FILE NAME(bot)) # type: ignore
+________________
+MAKE IT SO ONLY YOU CAN SEE THE MESSAGE.
+ephemeral= {True/False} 
+_______________
+
+
