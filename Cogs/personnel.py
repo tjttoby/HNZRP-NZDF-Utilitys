@@ -67,12 +67,7 @@ class Personnel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(
-        name="medalrequest",
-        description="Submit a medal request",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="medalrequest", description="Submit a medal request")
     @app_commands.describe(medal="The medal being requested")
     @app_commands.choices(medal=[
         app_commands.Choice(name=medal, value=medal)
@@ -115,12 +110,7 @@ class Personnel(commands.Cog):
 
         await interaction.response.send_message("Medal request submitted!", ephemeral=True)
 
-    @app_commands.command(
-        name="discharge",
-        description="Discharge a member",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="discharge", description="Discharge a member")
     @app_commands.describe(reason="Reason for discharge")
     async def discharge(self, interaction: discord.Interaction, reason: str):
         if not isinstance(interaction.user, discord.Member):
@@ -171,11 +161,11 @@ async def setup(bot: commands.Bot):
             app_cmd = bot.tree.get_command(cmd_name)
             if app_cmd:
                 try:
-                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                    setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
                 except Exception:
                     pass
                 try:
-                    app_cmd.dm_permission = False
+                    setattr(app_cmd, 'dm_permission', False)
                 except Exception:
                     pass
     except Exception:

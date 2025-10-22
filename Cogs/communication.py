@@ -9,12 +9,7 @@ class Communication(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(
-        name="vcrequest",
-        description="Request someone to join a voice channel",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="vcrequest", description="Request someone to join a voice channel")
     @app_commands.describe(
         user="The user to request",
         channel="The voice channel to join",
@@ -52,12 +47,7 @@ class Communication(commands.Cog):
         else:
             await interaction.response.send_message("This command can only be used in text channels.", ephemeral=True)
 
-    @app_commands.command(
-        name="say",
-        description="Make the bot say something",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="say", description="Make the bot say something")
     @app_commands.describe(
         message="The message to say",
         embed="Whether to send the message as an embed"
@@ -88,12 +78,7 @@ class Communication(commands.Cog):
 
         await interaction.followup.send("Message sent!", ephemeral=True)
 
-    @app_commands.command(
-        name="sign",
-        description="Send an officially signed message",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="sign", description="Send an officially signed message")
     @app_commands.describe(message="The message to sign")
     async def sign(
         self,
@@ -135,11 +120,11 @@ async def setup(bot: commands.Bot):
             app_cmd = bot.tree.get_command(cmd_name)
             if app_cmd:
                 try:
-                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                    setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
                 except Exception:
                     pass
                 try:
-                    app_cmd.dm_permission = False
+                    setattr(app_cmd, 'dm_permission', False)
                 except Exception:
                     pass
     except Exception:

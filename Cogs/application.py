@@ -44,12 +44,7 @@ class Application(commands.Cog):
     # NOTE: This hides the command from users who do not have the specified guild permission.
     # We're using Manage Roles as the required permission so members without it won't see the command in the UI.
     # Assumption: roles that should be allowed to use this command have Manage Roles permission.
-    @app_commands.command(
-        name="application",
-        description="Pass/Fail application post with details.",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="application", description="Pass/Fail application post with details.")
     @app_commands.describe(
         result="Pass or Fail",
         user="Select the user",
@@ -108,11 +103,11 @@ async def setup(bot: commands.Bot):
         if app_cmd:
             # require Manage Roles so users without that permission won't see the command in the UI
             try:
-                app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
             except Exception:
                 pass
             try:
-                app_cmd.dm_permission = False
+                setattr(app_cmd, 'dm_permission', False)
             except Exception:
                 pass
     except Exception:

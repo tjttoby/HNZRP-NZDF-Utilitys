@@ -10,12 +10,7 @@ class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(
-        name="beat",
-        description="Beat someone with a random item",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="beat", description="Beat someone with a random item")
     @app_commands.describe(user="The user to beat")
     async def beat(self, interaction: discord.Interaction, user: discord.Member):
         if not isinstance(interaction.user, discord.Member):
@@ -29,12 +24,7 @@ class Moderation(commands.Cog):
 
         await interaction.response.send_message(message, allowed_mentions=discord.AllowedMentions(users=True))
 
-    @app_commands.command(
-        name="inactivity",
-        description="Send an inactivity notice",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="inactivity", description="Send an inactivity notice")
     @app_commands.describe(user="The user to send the notice to")
     async def inactivity(self, interaction: discord.Interaction, user: discord.Member):
         if not isinstance(interaction.user, discord.Member):
@@ -63,12 +53,7 @@ class Moderation(commands.Cog):
         else:
             await interaction.response.send_message("This command can only be used in text channels.", ephemeral=True)
 
-    @app_commands.command(
-        name="caselog",
-        description="Create a case log entry",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="caselog", description="Create a case log entry")
     @app_commands.describe(
         user="The user involved in the case",
         punishment="The punishment given",
@@ -122,11 +107,11 @@ async def setup(bot: commands.Bot):
             app_cmd = bot.tree.get_command(cmd_name)
             if app_cmd:
                 try:
-                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                    setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
                 except Exception:
                     pass
                 try:
-                    app_cmd.dm_permission = False
+                    setattr(app_cmd, 'dm_permission', False)
                 except Exception:
                     pass
     except Exception:

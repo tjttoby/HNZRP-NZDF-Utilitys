@@ -209,12 +209,7 @@ class Callsigns(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(
-        name="callsign",
-        description="Request a callsign",
-        default_member_permissions=Permissions(manage_roles=True),
-        dm_permission=False,
-    )
+    @app_commands.command(name="callsign", description="Request a callsign")
     async def callsign(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -234,11 +229,11 @@ async def setup(bot: commands.Bot):
         app_cmd = bot.tree.get_command('callsign')
         if app_cmd:
             try:
-                app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
             except Exception:
                 pass
             try:
-                app_cmd.dm_permission = False
+                setattr(app_cmd, 'dm_permission', False)
             except Exception:
                 pass
     except Exception:
