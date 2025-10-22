@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import discord
-from discord import app_commands
+from discord import app_commands, Permissions
 from discord.ext import commands
 from config import ROLE_CONFIG, MEDIA, has_any_role_ids, media_file
 
@@ -9,7 +9,12 @@ class Communication(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="vcrequest", description="Request someone to join a voice channel")
+    @app_commands.command(
+        name="vcrequest",
+        description="Request someone to join a voice channel",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     @app_commands.describe(
         user="The user to request",
         channel="The voice channel to join",
@@ -47,7 +52,12 @@ class Communication(commands.Cog):
         else:
             await interaction.response.send_message("This command can only be used in text channels.", ephemeral=True)
 
-    @app_commands.command(name="say", description="Make the bot say something")
+    @app_commands.command(
+        name="say",
+        description="Make the bot say something",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     @app_commands.describe(
         message="The message to say",
         embed="Whether to send the message as an embed"
@@ -78,7 +88,12 @@ class Communication(commands.Cog):
 
         await interaction.followup.send("Message sent!", ephemeral=True)
 
-    @app_commands.command(name="sign", description="Send an officially signed message")
+    @app_commands.command(
+        name="sign",
+        description="Send an officially signed message",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     @app_commands.describe(message="The message to sign")
     async def sign(
         self,
@@ -111,4 +126,21 @@ class Communication(commands.Cog):
         await interaction.followup.send("Signed message sent!", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Communication(bot))
+    cog = Communication(bot)
+    await bot.add_cog(cog)
+
+    # Defensive visibility attributes for slash commands
+    try:
+        for cmd_name in ('vcrequest', 'say', 'sign'):
+            app_cmd = bot.tree.get_command(cmd_name)
+            if app_cmd:
+                try:
+                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                except Exception:
+                    pass
+                try:
+                    app_cmd.dm_permission = False
+                except Exception:
+                    pass
+    except Exception:
+        pass

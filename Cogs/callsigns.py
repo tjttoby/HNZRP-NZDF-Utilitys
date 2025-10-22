@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import discord
-from discord import app_commands
+from discord import app_commands, Permissions
 from discord.ext import commands
 from discord.ui import Modal, TextInput, Button, View
 from typing import Optional
@@ -209,7 +209,12 @@ class Callsigns(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="callsign", description="Request a callsign")
+    @app_commands.command(
+        name="callsign",
+        description="Request a callsign",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def callsign(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -221,4 +226,20 @@ class Callsigns(commands.Cog):
         await interaction.response.send_modal(modal)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Callsigns(bot))
+    cog = Callsigns(bot)
+    await bot.add_cog(cog)
+
+    # Defensive visibility attributes for slash command
+    try:
+        app_cmd = bot.tree.get_command('callsign')
+        if app_cmd:
+            try:
+                app_cmd.default_member_permissions = Permissions(manage_roles=True)
+            except Exception:
+                pass
+            try:
+                app_cmd.dm_permission = False
+            except Exception:
+                pass
+    except Exception:
+        pass

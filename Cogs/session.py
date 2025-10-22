@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import discord
-from discord import app_commands
+from discord import app_commands, Permissions
 from discord.ext import commands
 from discord.ui import View, Button
 from typing import Optional, Set
@@ -80,7 +80,12 @@ class Session(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="sessionvote", description="Start a session vote")
+    @app_commands.command(
+        name="sessionvote",
+        description="Start a session vote",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def sessionvote(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -125,7 +130,12 @@ class Session(commands.Cog):
         # Confirm to user
         await interaction.followup.send("Session vote started in the session channel!", ephemeral=True)
 
-    @app_commands.command(name="sessionshutdown", description="Shut down the session")
+    @app_commands.command(
+        name="sessionshutdown",
+        description="Shut down the session",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def sessionshutdown(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -174,7 +184,12 @@ class Session(commands.Cog):
         except discord.HTTPException:
             pass
 
-    @app_commands.command(name="fonline", description="Force the session online without voting")
+    @app_commands.command(
+        name="fonline",
+        description="Force the session online without voting",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def fonline(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -219,7 +234,12 @@ class Session(commands.Cog):
         await channel.send(content=mention, embed=online_embed, view=button_view)
         await interaction.followup.send("Session forced online!", ephemeral=True)
 
-    @app_commands.command(name="sessionlowping", description="Send a low ping encouraging RP participation")
+    @app_commands.command(
+        name="sessionlowping",
+        description="Send a low ping encouraging RP participation",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def sessionlowping(self, interaction: discord.Interaction):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
@@ -257,4 +277,21 @@ class Session(commands.Cog):
         await interaction.followup.send("Low ping sent to encourage RP participation!", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Session(bot))
+    cog = Session(bot)
+    await bot.add_cog(cog)
+
+    # Defensive visibility attributes for slash commands
+    try:
+        for cmd_name in ('sessionvote', 'sessionshutdown', 'fonline', 'sessionlowping'):
+            app_cmd = bot.tree.get_command(cmd_name)
+            if app_cmd:
+                try:
+                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                except Exception:
+                    pass
+                try:
+                    app_cmd.dm_permission = False
+                except Exception:
+                    pass
+    except Exception:
+        pass

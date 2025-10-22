@@ -1,6 +1,6 @@
 from __future__ import annotations
 import discord
-from discord import app_commands
+from discord import app_commands, Permissions
 from discord.ext import commands
 from typing import Literal
 from config import ROLE_CONFIG, MEDIA, has_permission, media_file
@@ -41,7 +41,15 @@ class Application(commands.Cog):
         embed.set_image(url=MEDIA[banner_key])
         return embed
 
-    @app_commands.command(name="application", description="Pass/Fail application post with details.")
+    # NOTE: This hides the command from users who do not have the specified guild permission.
+    # We're using Manage Roles as the required permission so members without it won't see the command in the UI.
+    # Assumption: roles that should be allowed to use this command have Manage Roles permission.
+    @app_commands.command(
+        name="application",
+        description="Pass/Fail application post with details.",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     @app_commands.describe(
         result="Pass or Fail",
         user="Select the user",
@@ -89,4 +97,24 @@ class Application(commands.Cog):
         await interaction.followup.send("Application posted.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Application(bot))
+    cog = Application(bot)
+    await bot.add_cog(cog)
+
+    # Defensive: ensure the app command has the intended visibility attributes set.
+    # Some discord.py/backends don't accept `default_member_permissions` or `dm_permission`
+    # in the decorator signature; set them directly on the command object after registration.
+    try:
+        app_cmd = bot.tree.get_command('application')
+        if app_cmd:
+            # require Manage Roles so users without that permission won't see the command in the UI
+            try:
+                app_cmd.default_member_permissions = Permissions(manage_roles=True)
+            except Exception:
+                pass
+            try:
+                app_cmd.dm_permission = False
+            except Exception:
+                pass
+    except Exception:
+        # Non-fatal - command visibility will fall back to permission checks at runtime
+        pass

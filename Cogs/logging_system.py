@@ -23,6 +23,7 @@ Admin Commands:
 """
 
 import discord
+from discord import Permissions
 from discord.ext import commands
 from discord import app_commands
 import datetime
@@ -220,7 +221,12 @@ class LoggingSystem(commands.Cog):
             pass
 
     # Admin command to test logging
-    @app_commands.command(name="testlog", description="[ADMIN] Test the logging system")
+    @app_commands.command(
+        name="testlog",
+        description="[ADMIN] Test the logging system",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def test_logging(self, interaction: discord.Interaction):
         """Test command for logging system."""
         # Check if user is bot admin
@@ -243,7 +249,12 @@ class LoggingSystem(commands.Cog):
         except Exception as e:
             await interaction.followup.send(f"❌ Logging test failed: {str(e)}", ephemeral=True)
 
-    @app_commands.command(name="setlogchannel", description="[ADMIN] Set the current channel as the logging channel")
+    @app_commands.command(
+        name="setlogchannel",
+        description="[ADMIN] Set the current channel as the logging channel",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def set_log_channel(self, interaction: discord.Interaction):
         """Set the current channel as the logging channel."""
         # Check if user is bot admin
@@ -292,7 +303,12 @@ class LoggingSystem(commands.Cog):
         except Exception as e:
             await interaction.followup.send(f"❌ Failed to generate configuration: {str(e)}", ephemeral=True)
 
-    @app_commands.command(name="logstatus", description="[ADMIN] Check the current logging system status")
+    @app_commands.command(
+        name="logstatus",
+        description="[ADMIN] Check the current logging system status",
+        default_member_permissions=Permissions(manage_roles=True),
+        dm_permission=False,
+    )
     async def log_status(self, interaction: discord.Interaction):
         """Check the current logging system status."""
         # Check if user is bot admin
@@ -355,3 +371,18 @@ class LoggingSystem(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(LoggingSystem(bot))
+    # Defensive: ensure admin commands are hidden from non-privileged users
+    try:
+        for cmd_name in ('testlog', 'setlogchannel', 'logstatus'):
+            app_cmd = bot.tree.get_command(cmd_name)
+            if app_cmd:
+                try:
+                    app_cmd.default_member_permissions = Permissions(manage_roles=True)
+                except Exception:
+                    pass
+                try:
+                    app_cmd.dm_permission = False
+                except Exception:
+                    pass
+    except Exception:
+        pass
