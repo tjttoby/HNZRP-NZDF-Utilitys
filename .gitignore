@@ -3,6 +3,7 @@
 
 # Sensitive configuration files
 config.py
+config.example.py
 
 # Sensitive documentation and setup files
 LOGGING_SETUP.md
