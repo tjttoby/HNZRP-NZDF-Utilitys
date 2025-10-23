@@ -30,12 +30,35 @@ import datetime
 from typing import Optional
 import traceback
 import config
+import logging
+from collections import deque
+import io
 
 class LoggingSystem(commands.Cog):
     """Comprehensive logging system for command usage and errors."""
     
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        # In-memory ring buffer of recent log lines to attach to admin pings
+        self._recent_log_lines: deque[str] = deque(maxlen=5000)
+        # Install a small logging handler to capture recent log messages
+        class _BufferHandler(logging.Handler):
+            def __init__(self, outer: 'LoggingSystem'):
+                super().__init__()
+                self.outer = outer
+
+            def emit(self, record: logging.LogRecord) -> None:
+                try:
+                    msg = self.format(record)
+                    self.outer._recent_log_lines.append(msg)
+                except Exception:
+                    pass
+
+        handler = _BufferHandler(self)
+        handler.setLevel(logging.DEBUG)
+        # Use a simple formatter
+        handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+        logging.getLogger().addHandler(handler)
         
     async def get_log_channel(self) -> Optional[discord.TextChannel]:
         """Get the configured logging channel."""
@@ -118,13 +141,20 @@ class LoggingSystem(commands.Cog):
                 icon_url=config.MEDIA["LOGO"]
             )
             
-            await channel.send(embed=embed)
+            await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
             
         except Exception as e:
             print(f"[LOGGING] Failed to log command usage: {e}")
 
     async def log_error_with_ping(self, interaction: discord.Interaction, command_name: str, error: Exception):
         """Log error and ping bot admins."""
+        # Do not ping admins for permission/check failures
+        from discord import app_commands as _appcmd
+        orig = getattr(error, 'original', None)
+        if isinstance(error, _appcmd.CheckFailure) or isinstance(orig, _appcmd.CheckFailure):
+            # Normal permission issue; don't ping admins
+            logging.getLogger('NZDF.logging').debug('Not pinging admins for CheckFailure on %s', command_name)
+            return
         channel = await self.get_log_channel()
         if not channel:
             return
@@ -199,19 +229,42 @@ class LoggingSystem(commands.Cog):
                 icon_url=config.MEDIA["LOGO"]
             )
             
-            # Create ping message for bot admins
-            admin_mentions = " ".join([f"<@{admin_id}>" for admin_id in config.BOT_ADMINS])
-            ping_message = f"🚨 **COMMAND ERROR ALERT** 🚨\n{admin_mentions}\n\nA critical error occurred that requires admin attention:"
-            
-            await channel.send(content=ping_message, embed=embed)
+            # Prepare recent terminal log text and bytes
+            logs_text = "\n".join(list(self._recent_log_lines)) or "(no recent logs captured)"
+            # Truncate if excessively large
+            if len(logs_text) > 800000:
+                logs_text = logs_text[-800000:]
+            logs_bytes = logs_text.encode('utf-8')
+
+            # Post the error embed to the logging channel WITHOUT pinging admins
+            try:
+                # Create buffer for the log file
+                buf_channel = io.BytesIO(logs_bytes)
+                buf_channel.seek(0)
+                await channel.send(embed=embed, file=discord.File(buf_channel, filename='terminal.log'), allowed_mentions=discord.AllowedMentions.none())
+            except Exception:
+                # Fallback: send embed without file
+                try:
+                    await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+                except Exception:
+                    logging.getLogger('NZDF.logging').exception('Failed to post error embed to log channel')
+
+            # Note: Direct messaging to admins has been disabled to prevent unwanted notifications
             
         except Exception as e:
-            print(f"[LOGGING] Failed to log error with ping: {e}")
+            logging.getLogger('NZDF.logging').exception('Failed to log error with ping: %s', e)
 
     @commands.Cog.listener()
     async def on_app_command_completion(self, interaction: discord.Interaction, command: app_commands.Command):
         """Log successful command completions."""
-        await self.log_command_usage(interaction, command.qualified_name, success=True)
+        try:
+            ignored = set((getattr(config, 'IGNORED_COMMANDS', None) or []))
+            # skip commands specified in config. Also skip the panel UI itself.
+            if command.qualified_name in ignored or command.qualified_name.startswith('x'):
+                return
+            await self.log_command_usage(interaction, command.qualified_name, success=True)
+        except Exception:
+            print('[LOGGING] Failed in on_app_command_completion')
 
     @commands.Cog.listener() 
     async def on_command_completion(self, ctx: commands.Context):
@@ -226,7 +279,7 @@ class LoggingSystem(commands.Cog):
         """Test command for logging system."""
         # Check if user is bot admin
         if interaction.user.id not in config.BOT_ADMINS:
-            await interaction.response.send_message("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.response.send_message("❌ You don't have permission to use this admin command. Contact an admin.", ephemeral=True)
             return
             
         await interaction.response.defer(ephemeral=True)
@@ -249,7 +302,7 @@ class LoggingSystem(commands.Cog):
         """Set the current channel as the logging channel."""
         # Check if user is bot admin
         if interaction.user.id not in config.BOT_ADMINS:
-            await interaction.response.send_message("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.response.send_message("❌ You don't have permission to use this admin command. Contact an admin.", ephemeral=True)
             return
             
         if not isinstance(interaction.channel, discord.TextChannel):
@@ -298,7 +351,7 @@ class LoggingSystem(commands.Cog):
         """Check the current logging system status."""
         # Check if user is bot admin
         if interaction.user.id not in config.BOT_ADMINS:
-            await interaction.response.send_message("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.response.send_message("❌ You don't have permission to use this admin command. Contact an admin.", ephemeral=True)
             return
             
         await interaction.response.defer(ephemeral=True)
@@ -339,10 +392,18 @@ class LoggingSystem(commands.Cog):
                     inline=False
                 )
             
-            # Add admin list
-            admin_list = ", ".join([f"<@{admin_id}>" for admin_id in config.BOT_ADMINS])
+            # Add admin list (non-pinging - show display name or ID)
+            admin_entries = []
+            for admin_id in config.BOT_ADMINS:
+                try:
+                    user = self.bot.get_user(admin_id) or await self.bot.fetch_user(admin_id)
+                    name = getattr(user, 'display_name', None) or getattr(user, 'name', None) or str(admin_id)
+                    admin_entries.append(f"{name} (ID: `{admin_id}`)")
+                except Exception:
+                    admin_entries.append(f"ID: `{admin_id}`")
+            admin_list = ", ".join(admin_entries)
             embed.add_field(
-                name="👥 Bot Admins (will be pinged on errors)",
+                name="👥 Bot Admins (won't be pinged automatically)",
                 value=admin_list if admin_list else "None configured",
                 inline=False
             )

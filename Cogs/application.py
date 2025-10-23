@@ -4,6 +4,7 @@ from discord import app_commands, Permissions
 from discord.ext import commands
 from typing import Literal
 from config import ROLE_CONFIG, MEDIA, has_permission, media_file
+import config
 
 class Application(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -68,7 +69,18 @@ class Application(commands.Cog):
 
         # Check user's permissions through the permission system
         if not has_permission(interaction.user, "APPLICATION"):
-            return await interaction.response.send_message("You are not allowed to use this command.", ephemeral=True)
+            roles = config.get_command_roles('application') or config.ROLE_CONFIG.get('APPLICATION_ALLOWED_ROLES', [])
+            req = None
+            if roles:
+                mentions = []
+                for r in roles:
+                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
+                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
+                req = ", ".join(mentions)
+            msg = "You are not allowed to use this command."
+            if req:
+                msg = f"You are not allowed to use this command. Required role(s): {req}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         # Check if the channel is a text channel
         if not isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):

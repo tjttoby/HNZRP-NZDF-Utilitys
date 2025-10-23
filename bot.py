@@ -5,28 +5,26 @@ import asyncio
 from itertools import cycle 
 from dotenv import load_dotenv
 
-
-
-bot = commands.Bot (command_prefix='!', intents=discord.Intents.all()) # Cmd (non slash) prefix. 
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 ## ------------- BOT STATUS CYCLE ------------- #
 
-bot_statuses = cycle(['NZDF Bot' , 'Developed by Tobytiwi', 'Created for NZDF']) # Statuses to cycle through
+bot_statuses = cycle(['NZDF Bot', 'Developed by Tobytiwi', 'Created for NZDF'])
 
-@tasks.loop(seconds=5) # Change status every 10 seconds 
+@tasks.loop(seconds=5)
 async def change_status():
-    await bot.change_presence (activity=discord.Game(next(bot_statuses))) 
+    await bot.change_presence(activity=discord.Game(next(bot_statuses))) 
 
- ## ------------- BOT ONLINE IN TERMANAL ------------- #
+## ------------- BOT ONLINE IN TERMINAL ------------- #
 @bot.event 
 async def on_ready():
-    print(f'☑️ Bot online') # Print to console when bot is online
-    change_status.start() # Start status change loop for statuses. 
+    print('☑️ Bot online')
+    change_status.start()
     try:
         synced = await bot.tree.sync() 
         print(f'☑️ Synced {len(synced)} commands.') 
     except Exception as e:
-        print(f"❌ ERROR: Failed to sync commands: ", e) 
+        print(f"❌ ERROR: Failed to sync commands: {e}") 
 
 
 
@@ -82,8 +80,35 @@ async def on_app_command_error(interaction: discord.Interaction, error):
     try:
         cmd_name = getattr(getattr(interaction, 'command', None), 'qualified_name', 'unknown')
         print(f"[AppCmdError] {cmd_name}: {error}")
-        
-        # Try to get the logging system cog for enhanced error logging
+        # Permission-related errors: inform the user which roles are required but do NOT ping admins
+        from discord import app_commands as _appcmd
+        import config as _config
+
+        # If this is a permission/check failure (or wraps one), inform the user and do NOT ping admins
+        orig = getattr(error, 'original', None)
+        if isinstance(error, _appcmd.CheckFailure) or isinstance(orig, _appcmd.CheckFailure):
+            # Try to determine which role(s) would be required for this command
+            required = _config.get_command_roles(cmd_name) or _config.ROLE_CONFIG.get(f"{cmd_name.upper()}_ALLOWED_ROLES", [])
+            if required:
+                mentions = []
+                for r in required:
+                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
+                    if role_obj:
+                        mentions.append(role_obj.name)
+                    else:
+                        mentions.append(f"`Role ID: {r}`")
+                role_mentions = ", ".join(mentions)
+                msg = f"❌ You don't have permission to use this command. Required role(s): {role_mentions}."
+            else:
+                msg = "❌ You don't have permission to use this command."
+            # Send ephemeral message without pinging admins
+            if not interaction.response.is_done():
+                await interaction.response.send_message(msg, ephemeral=True)
+            else:
+                await interaction.followup.send(msg, ephemeral=True)
+            return
+
+        # Unexpected errors: try to get the logging system cog for enhanced error logging
         logging_cog = bot.get_cog('LoggingSystem')
         if logging_cog and hasattr(logging_cog, 'log_error_with_ping'):
             await logging_cog.log_error_with_ping(interaction, cmd_name, error)  # type: ignore
@@ -105,9 +130,9 @@ async def load():
             continue
         try:
             await bot.load_extension(f'Cogs.{filename[:-3]}')
-            print(f"✅ Successfully loaded extension: {filename}")
+            print(f"⚙️ Successfully loaded Cog: {filename}")
         except Exception as e:
-            print(f"❌ Failed to load extension {filename}: {str(e)}")
+            print(f"❌ Failed to load Cog: {filename}: {str(e)}")
 
 #--------------------- RUN BOT ------------------ #
 async def main():

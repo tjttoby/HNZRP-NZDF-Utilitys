@@ -7,7 +7,11 @@ from discord.ui import Modal, TextInput, Button, View
 from typing import Optional
 import asyncio
 import time
+import logging
 from config import ROLE_CONFIG, MEDIA, get_highest_role, has_permission, media_file
+
+logger = logging.getLogger('NZDF.callsigns')
+MANAGER_ROLE_ID = 1427869184179568712
 
 class CallsignModal(Modal, title="Callsign Request"):
     callsign = TextInput(
@@ -32,12 +36,40 @@ class CallsignModal(Modal, title="Callsign Request"):
             return None
 
         embed = discord.Embed(
-            title="Callsign Request",
-            description=f"Requested Callsign: {self.callsign.value}",
-            color=discord.Color.blue()
+            title="🏷️ Callsign Authorization Request",
+            description=f"**Personnel Callsign Assignment Request**\n\nA member has requested a new tactical callsign for operational use.",
+            color=discord.Color.orange()
         )
-        embed.add_field(name="Requestor", value=interaction.user.mention, inline=True)
-        embed.add_field(name="Rank", value=highest_role.name, inline=True)
+        embed.add_field(
+            name="🎯 Requested Callsign", 
+            value=f"**{self.callsign.value}**",
+            inline=False
+        )
+        embed.add_field(
+            name="👤 Requesting Member", 
+            value=f"{interaction.user.mention}\n*{interaction.user.display_name}*",
+            inline=True
+        )
+        embed.add_field(
+            name="🎖️ Current Rank", 
+            value=f"**{highest_role.name}**",
+            inline=True
+        )
+        embed.add_field(
+            name="📅 Request Time", 
+            value=f"<t:{int(discord.utils.utcnow().timestamp())}:R>",
+            inline=True
+        )
+        embed.add_field(
+            name="⚡ Action Required", 
+            value="**Command approval needed**\n• Review callsign appropriateness\n• Verify member eligibility\n• Approve or deny request",
+            inline=False
+        )
+        embed.set_thumbnail(url=MEDIA.get("LOGO", ""))
+        embed.set_footer(
+            text="Callsign requests require command authorization • Use buttons below to approve/deny",
+            icon_url=interaction.user.display_avatar.url
+        )
         files = []
 
         # Create approval buttons
@@ -104,8 +136,12 @@ class CallsignApprovalView(View):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This action can only be performed by server members.", ephemeral=True)
 
-        if not has_permission(interaction.user, "CALLSIGN_APPROVE"):
-            return await interaction.response.send_message("You don't have permission to approve callsigns.", ephemeral=True)
+        # Require manager role to approve
+        if not any(getattr(r, 'id', None) == MANAGER_ROLE_ID for r in interaction.user.roles):
+            logger.debug('User %s attempted to approve without manager role', getattr(interaction.user, 'id', None))
+            role_obj = interaction.guild.get_role(MANAGER_ROLE_ID) if interaction.guild else None
+            mention_text = role_obj.mention if role_obj else f"`Role ID: {MANAGER_ROLE_ID}`"
+            return await interaction.response.send_message(f"You don't have permission to approve callsigns. Required role: {mention_text}", ephemeral=True)
 
         if self._check_timeout():
             return await interaction.response.send_message("This request has timed out after 5 hours.", ephemeral=True)
@@ -157,8 +193,12 @@ class CallsignApprovalView(View):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This action can only be performed by server members.", ephemeral=True)
 
-        if not has_permission(interaction.user, "CALLSIGN_APPROVE"):
-            return await interaction.response.send_message("You don't have permission to deny callsigns.", ephemeral=True)
+        # Require manager role to deny
+        if not any(getattr(r, 'id', None) == MANAGER_ROLE_ID for r in interaction.user.roles):
+            logger.debug('User %s attempted to deny without manager role', getattr(interaction.user, 'id', None))
+            role_obj = interaction.guild.get_role(MANAGER_ROLE_ID) if interaction.guild else None
+            mention_text = role_obj.mention if role_obj else f"`Role ID: {MANAGER_ROLE_ID}`"
+            return await interaction.response.send_message(f"You don't have permission to deny callsigns. Required role: {mention_text}", ephemeral=True)
 
         if self._check_timeout():
             return await interaction.response.send_message("This request has timed out after 5 hours.", ephemeral=True)
@@ -214,8 +254,7 @@ class Callsigns(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_permission(interaction.user, "CALLSIGN_REQUEST"):
-            return await interaction.response.send_message("You don't have permission to request a callsign.", ephemeral=True)
+        # No role required to request a callsign; anyone who is a guild member may request.
 
         modal = CallsignModal(self)
         await interaction.response.send_modal(modal)
@@ -228,6 +267,7 @@ async def setup(bot: commands.Bot):
     try:
         app_cmd = bot.tree.get_command('callsign')
         if app_cmd:
+            # Set default_member_permissions to hide command from users without manage_roles
             try:
                 setattr(app_cmd, 'default_member_permissions', Permissions(manage_roles=True))
             except Exception:

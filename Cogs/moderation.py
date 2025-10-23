@@ -20,9 +20,39 @@ class Moderation(commands.Cog):
             return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
         item = random.choice(BEAT_ITEMS)
-        message = f"{user.mention} has been beaten by {interaction.user.mention} with {item}"
+        
+        embed = discord.Embed(
+            title="💥 DISCIPLINARY ACTION",
+            description=f"**{user.display_name}** has received corrective action!",
+            color=discord.Color.orange()
+        )
+        embed.add_field(
+            name="🎯 Target",
+            value=f"{user.mention}",
+            inline=True
+        )
+        embed.add_field(
+            name="⚔️ Administered by",
+            value=f"{interaction.user.mention}",
+            inline=True
+        )
+        embed.add_field(
+            name="🔨 Weapon of Choice",
+            value=f"**{item}**",
+            inline=False
+        )
+        embed.add_field(
+            name="📋 Action Result",
+            value="✅ **Disciplinary measure applied**\n*Hopefully this will improve behavior!*",
+            inline=False
+        )
+        embed.set_thumbnail(url=MEDIA.get("INFRACTION", ""))
+        embed.set_footer(
+            text="NZDF Disciplinary System • This is meant in good fun!",
+            icon_url=interaction.user.display_avatar.url
+        )
 
-        await interaction.response.send_message(message, allowed_mentions=discord.AllowedMentions(users=True))
+        await interaction.response.send_message(embed=embed, allowed_mentions=discord.AllowedMentions(users=True))
 
     @app_commands.command(name="inactivity", description="Send an inactivity notice")
     @app_commands.describe(user="The user to send the notice to")

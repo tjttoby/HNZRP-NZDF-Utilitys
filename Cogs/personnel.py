@@ -5,6 +5,7 @@ from discord import app_commands, Permissions
 from discord.ext import commands
 from discord.ui import View, Button
 from typing import Optional
+import config
 from config import (
     ROLE_CONFIG, MEDIA, AVAILABLE_MEDALS, MEDAL_REQUEST_PING_USER,
     has_any_role_ids, get_highest_role, media_file
@@ -82,14 +83,54 @@ class Personnel(commands.Cog):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
         if not has_any_role_ids(interaction.user, ROLE_CONFIG["MEDAL_REQUEST_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+            roles = config.get_command_roles('medal') or config.ROLE_CONFIG.get('MEDAL_REQUEST_ALLOWED_ROLES', [])
+            req = None
+            if roles:
+                mentions = []
+                for r in roles:
+                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
+                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
+                req = ", ".join(mentions)
+            msg = "You don't have permission to use this command."
+            if req:
+                msg = f"You don't have permission to use this command. Required role(s): {req}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         embed = discord.Embed(
-            title="Medal Request",
-            description=f"Medal: {medal.value}",
-            color=discord.Color.blue()
+            title="🎖️ Medal Request Submitted",
+            description=f"**Application for Military Honor**\n\nA formal request has been submitted for recognition of distinguished service.",
+            color=discord.Color.gold()
         )
-        embed.add_field(name="Requested By", value=interaction.user.mention)
+        embed.add_field(
+            name="🏅 Medal Requested", 
+            value=f"**{medal.value}**",
+            inline=False
+        )
+        embed.add_field(
+            name="👤 Requesting Member", 
+            value=f"{interaction.user.mention}\n*{interaction.user.display_name}*",
+            inline=True
+        )
+        embed.add_field(
+            name="📅 Request Date", 
+            value=f"<t:{int(discord.utils.utcnow().timestamp())}:D>",
+            inline=True
+        )
+        embed.add_field(
+            name="📋 Status", 
+            value="🟡 **Pending Review**",
+            inline=True
+        )
+        embed.add_field(
+            name="📝 Next Steps", 
+            value="• Please provide evidence/proof in the thread below\n• Include detailed justification for the award\n• Command staff will review the submission",
+            inline=False
+        )
+        embed.set_thumbnail(url=MEDIA.get("LOGO", ""))
+        embed.set_footer(
+            text="Medal requests require thorough documentation and command approval",
+            icon_url=interaction.user.display_avatar.url
+        )
         # No logo for medal request
         files = []
 
@@ -104,11 +145,35 @@ class Personnel(commands.Cog):
                 ping_content = user.mention
 
         # Send request and create thread
-        message = await interaction.channel.send(embed=embed, files=files)
-        thread = await message.create_thread(name=f"Medal Request - {interaction.user.name}", auto_archive_duration=10080)
-        await thread.send("Please provide proof here.")
+        message = await interaction.channel.send(content=ping_content, embed=embed, files=files)
+        thread = await message.create_thread(name=f"🎖️ Medal Request - {interaction.user.display_name}", auto_archive_duration=10080)
+        
+        # Send detailed instructions in thread
+        thread_embed = discord.Embed(
+            title="📋 Evidence Submission Required",
+            description="Please provide comprehensive documentation to support your medal request:",
+            color=discord.Color.blue()
+        )
+        thread_embed.add_field(
+            name="📸 Required Evidence",
+            value="• Screenshots of relevant actions/achievements\n• Witness statements from other members\n• Detailed description of the qualifying event(s)",
+            inline=False
+        )
+        thread_embed.add_field(
+            name="📝 Justification",
+            value="• Explain why this medal is deserved\n• Detail how your actions align with medal criteria\n• Include dates, times, and specific circumstances",
+            inline=False
+        )
+        thread_embed.add_field(
+            name="⏰ Review Process",
+            value="• Command staff will review all submissions\n• Additional information may be requested\n• Decision will be communicated via this thread",
+            inline=False
+        )
+        thread_embed.set_footer(text="Provide clear, detailed evidence for the best chance of approval")
+        
+        await thread.send(embed=thread_embed)
 
-        await interaction.response.send_message("Medal request submitted!", ephemeral=True)
+        await interaction.response.send_message("🎖️ **Medal request submitted successfully!** Please check the thread below and provide the required evidence.", ephemeral=True)
 
     @app_commands.command(name="discharge", description="Discharge a member")
     @app_commands.describe(reason="Reason for discharge")
@@ -117,7 +182,18 @@ class Personnel(commands.Cog):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
         if not has_any_role_ids(interaction.user, ROLE_CONFIG["DISCHARGE_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+            roles = config.get_command_roles('discharge') or config.ROLE_CONFIG.get('DISCHARGE_ALLOWED_ROLES', [])
+            req = None
+            if roles:
+                mentions = []
+                for r in roles:
+                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
+                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
+                req = ", ".join(mentions)
+            msg = "You don't have permission to use this command."
+            if req:
+                msg = f"You don't have permission to use this command. Required role(s): {req}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         highest_role = get_highest_role(interaction.user)
         if not highest_role:
