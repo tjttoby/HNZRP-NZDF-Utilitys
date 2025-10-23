@@ -1,8 +1,9 @@
 from __future__ import annotations
+import logging
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Final, TypedDict, cast
+from typing import Final, TypedDict
 import os
 
 # ========== CONFIG ==========
@@ -92,7 +93,7 @@ ROLE_CONFIG: RoleConfig = {
 CHANNEL_CONFIG: ChannelConfig = {
     "CASELOG_CHANNEL": 1430467047216644196,
     "SESSION_STATUS_CHANNEL": 1427869495619354686,
-    "COMMAND_LOG_CHANNEL": 1234567890123456789  # Update this to your logging channel ID
+    "COMMAND_LOG_CHANNEL": 1430728771379531786  # Update this to your logging channel ID
 }
 
 # Medal request configuration
@@ -210,6 +211,7 @@ def get_command_roles(command_name: str) -> list[int]:
 def has_permission(member: discord.Member, command_name: str) -> bool:
     """Check if a member has permission to use a command through roles or direct allow list."""
     try:
+        logger = logging.getLogger('NZDF.config')
         # Check bot admins first
         if member.id in BOT_ADMINS:
             return True
@@ -218,28 +220,51 @@ def has_permission(member: discord.Member, command_name: str) -> bool:
         if member.id in ALLOWED_USERS.get(command_name, []):
             return True
 
-        # Get command roles and check permissions
+        # Normalize common command name variants to map to role lists
+        normalized = command_name.lower().replace(' ', '').replace('_', '')
+        # Try the explicit map first
         command_roles = get_command_roles(command_name)
         if not command_roles:
-            print(f"Warning: No roles configured for command {command_name}")
+            # Attempt fallback mappings
+            if normalized.startswith('callsign'):
+                command_roles = ROLE_CONFIG.get('CALLSIGN_REQUEST_ALLOWED_ROLES', [])
+            else:
+                # Try the generic ROLE_CONFIG key convention
+                role_config_key = f"{command_name.upper()}_ALLOWED_ROLES"
+                command_roles = ROLE_CONFIG.get(role_config_key, [])
+
+        if not command_roles:
+            logger.warning('No roles configured for command %s', command_name)
             return False
-        
+
         member_role_ids = [role.id for role in member.roles]
         has_perm = any(role_id in command_roles for role_id in member_role_ids)
-        
+
         if not has_perm:
-            print(f"Permission denied for {member.name} ({member.id}) on command {command_name}")
-            print(f"User roles: {member_role_ids}")
-            print(f"Required roles: {command_roles}")
-            
+            logger.debug('Permission denied for %s (%s) on command %s', member.name, member.id, command_name)
+            logger.debug('User roles: %s', member_role_ids)
+            logger.debug('Required roles: %s', command_roles)
+
         return has_perm
     except Exception as e:
         print(f"Error checking permissions for {command_name}: {str(e)}")
         return False
-        
-    role_config_key = f"{command_name.upper()}_ALLOWED_ROLES"
-    allowed_roles = ROLE_CONFIG.get(role_config_key, [])
-    if allowed_roles:
-        return has_any_role_ids(member, allowed_roles)
-        
-    return False
+
+def get_required_role_mentions(command_name: str, guild: discord.Guild | None) -> str | None:
+    """Return human-friendly role mentions for required roles for a command, or None if not configured."""
+    try:
+        roles = get_command_roles(command_name)
+        if not roles:
+            roles = ROLE_CONFIG.get(f"{command_name.upper()}_ALLOWED_ROLES", [])
+        if not roles:
+            return None
+        mentions = []
+        for rid in roles:
+            if guild:
+                role = guild.get_role(rid)
+                mentions.append(role.mention if role else f"`Role ID: {rid}`")
+            else:
+                mentions.append(f"`Role ID: {rid}`")
+        return ", ".join(mentions)
+    except Exception:
+        return None

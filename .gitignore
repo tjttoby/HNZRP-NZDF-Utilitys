@@ -4,6 +4,14 @@
 # Sensitive configuration files
 config.py
 
+# Sensitive documentation and setup files
+LOGGING_SETUP.md
+OWNER_README.md
+NZDF_Bot.code-workspace
+
+# Admin/Owner cogs and sensitive bot functionality
+Cogs/owner.py
+
 # Python cache files
 __pycache__/
 *.pyc
