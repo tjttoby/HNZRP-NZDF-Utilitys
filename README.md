@@ -1,6 +1,6 @@
 # 🎖️ NZDF Discord Bot
 
-![NZDF Logo]([https://imgpx.com/en/1Oiy7jFITJwX.png](https://imgpx.com/en/3PQDx1MhPsuz.png))
+![NZDF Logo](https://imgpx.com/en/3PQDx1MhPsuz.png)
 
 ## Overview
 
