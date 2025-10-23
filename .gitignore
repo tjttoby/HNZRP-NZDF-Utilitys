@@ -1,6 +1,10 @@
 # Environment variables (contains sensitive tokens)
 .env
 
+# Local backups of env files
+.env.local.bak
+.env.newtoken.bak
+
 # Sensitive configuration files
 config.py
 config.example.py
