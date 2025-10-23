@@ -1,6 +1,6 @@
 # 🎖️ NZDF Discord Bot
 
-![NZDF Logo](https://imgpx.com/en/1Oiy7jFITJwX.png)
+![NZDF Logo](https://imgpx.com/en/3PQDx1MhPsuz.png)
 
 ## Overview
 
@@ -149,50 +149,12 @@ The bot requires the following Discord permissions:
 
 ---
 
-## 📋 Setup Requirements
+## 📋 Setup Infomation
 
 ### **Python Dependencies**
 - `discord.py` (v2.0+) - Discord API interaction
 - `python-dotenv` - Environment variable management
 - Python 3.8+ - Modern Python features
-
-### **Discord Setup**
-1. Create bot application in Discord Developer Portal
-2. Generate bot token and add to `.env` file
-3. Invite bot with required permissions
-4. Configure roles and channels in `config.py`
-
-### **File Structure**
-```
-NZDF_Bot/
-├── bot.py                 # Main bot entry point
-├── config.py             # Centralized configuration
-├── .env                  # Environment variables (not in repo)
-├── Cogs/                 # Command modules
-│   ├── session.py        # Session management
-│   ├── personnel.py      # Personnel administration  
-│   ├── moderation.py     # Discipline and cases
-│   ├── communication.py  # Announcements and messaging
-│   ├── application.py    # Recruitment processing
-│   ├── callsigns.py      # Callsign management
-│   ├── logging_system.py # Activity logging
-│   └── Ping.py          # Utility commands
-└── README.md            # This documentation
-```
-
----
-
-## 🎖️ About HNZRP
-
-**HNZRP (Hardcore New Zealand Roleplay)** is a military simulation community focused on realistic New Zealand Defence Force operations and training. The server provides:
-
-- **Authentic military roleplay** experiences
-- **Structured training programs** and career progression  
-- **Realistic operations** and mission scenarios
-- **Professional military culture** and discipline
-- **Community-driven** events and activities
-
-This bot was specifically designed to support HNZRP's unique requirements for military-style administration, session management, and community engagement.
 
 ---
 
@@ -211,23 +173,26 @@ This bot was specifically designed to support HNZRP's unique requirements for mi
 **Developer:** Tobytiwi  
 **GitHub:** [tjttoby](https://github.com/tjttoby)  
 **Repository:** [HNZRP-NZDF-Utilitys](https://github.com/tjttoby/HNZRP-NZDF-Utilitys)
+**Discord:** `tjttoby`
 
 For bug reports, feature requests, or technical support, please:
 1. Check existing issues on GitHub
 2. Create a detailed issue report  
-3. Contact the developer directly if urgent
+3. Contact the developer on discord
 
 ---
 
 ## 📜 License & Usage
 
-This bot is **custom-built exclusively for HNZRP's NZDF server**. While the code is available for reference and learning, it contains server-specific configurations and branding.
+This bot is **custom-built exclusively for HNZRP's NZDF server**. While the code is available for reference and learning, it contains server-specific configurations and branding, and will not work without heavy modification.
 
 **Usage Guidelines:**
 - ✅ Learning and educational reference
 - ✅ Inspiration for similar projects
 - ❌ Direct deployment without modification
-- ❌ Commercial use without permission
+- ❌ Commercial use
+
+Any use of this bot's code without the dev (tobytiwi)'s permission is subject to DMCA takedown requests.
 
 ---
 
@@ -247,4 +212,6 @@ This bot is **custom-built exclusively for HNZRP's NZDF server**. While the code
 
 ---
 
-**⚡ Built with precision. Deployed with pride. Serving the NZDF community.**
+**⚡ Built with precision. Deployed with pride. Serving the HNZRP, NZDF community.**
+
+© Tobytiwi 2025
