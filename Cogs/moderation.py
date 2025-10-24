@@ -141,28 +141,46 @@ class Moderation(commands.Cog):
             return await interaction.response.send_message("Case log channel not found or not properly configured.", ephemeral=True)
 
         embed = discord.Embed(
-            title="Case Log Entry",
-            color=discord.Color.red()
+            title="⚖️ Case Log",
+            description=f"**User:** {user.mention}\n**Punishment:** {punishment}\n**Reason:** {reason}",
+            color=discord.Color.orange()
         )
-        embed.add_field(name="User", value=f"{user.mention} ({user.id})", inline=True)
-        embed.add_field(name="Punishment", value=punishment, inline=True)
-        embed.add_field(name="Reason", value=reason, inline=False)
-        embed.add_field(name="Logged By", value=interaction.user.mention, inline=False)
+        embed.set_thumbnail(url=MEDIA.get("LOGO", ""))
+        embed.set_footer(text=f"Case logged by {interaction.user.display_name}")
+        
         files = []
         f, url = media_file("INFRACTION")
         if url and f:
             try:
-                embed.set_thumbnail(url=url)
                 files.append(f)
             except Exception:
                 pass
 
         # Send the embed and create a thread
         message = await output_channel.send(embed=embed, files=files)
-        thread = await message.create_thread(name=f"Case Evidence - {user.name}", auto_archive_duration=10080)
-        await thread.send("Please provide evidence here.")
+        
+        # Wait a tiny bit for Discord to register the message
+        import asyncio
+        await asyncio.sleep(0.3)
+        
+        # Create thread using the correct API
+        try:
+            thread = await message.create_thread(
+                name=f"Case - {user.display_name}",
+                auto_archive_duration=1440,  # 24h auto-archive
+                reason="Evidence thread for case log"
+            )
+            await thread.send(f"Put evidence here\n-# *Logged by: {interaction.user.mention}*")
+        except discord.Forbidden:
+            await interaction.response.send_message("⚠️ Bot lacks permission to create threads.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.response.send_message(f"⚠️ Failed to create thread: {e}", ephemeral=True)
+            return
 
-        await interaction.response.send_message("Case log created!", ephemeral=True)
+        await interaction.response.send_message(
+            f"✅ Case logged for {user.mention} in <#{output_channel.id}>.", ephemeral=True
+        )
 
 async def setup(bot: commands.Bot):
     cog = Moderation(bot)

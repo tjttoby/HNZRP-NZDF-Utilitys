@@ -52,38 +52,41 @@ Commands for managing training sessions and operations.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/sessionvote` | Start a democratic vote to begin a session | Session Staff |
-| `/sessionshutdown` | Officially end the current session | Session Staff |
-| `/fonline` | Force session online without voting (emergency) | Session Staff |
-| `/sessionlowping` | Send activity boost to encourage participation | Session Staff |
+| `/sessionvote` | Start a democratic vote to begin a session | SNCO, CO & HI-COMM |
+| `/sessionshutdown` | Officially end the current session | SNCO, CO & HI-COMM |
+| `/fonline` | Force session online without voting (emergency) | SNCO, CO & HI-COMM |
+| `/sessionlowping` | Send activity boost to encourage participation | SNCO, CO & HI-COMM |
+
+**Note:** While only SNCO, CO & HI-COMM can start session votes, **EVERYONE** can vote on active session polls.
 
 ### **Personnel Commands**
 Military personnel administration and management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/medalrequest <medal>` | Submit a request for military honors | Personnel |
-| `/discharge <reason>` | Submit a discharge request | Authorized Staff |
-| `/callsign` | Request a tactical callsign assignment | Personnel |
-| `/application <result> <user> <reason> <notes>` | Process recruitment applications | Recruitment Staff |
+| `/medalrequest <medal>` | Submit a request for military honors | All NZDF Personnel |
+| `/discharge <reason>` | Submit a discharge request | All NZDF Personnel |
+| `/callsign` | Request a tactical callsign assignment | Everyone |
+| `/application <result> <user> <reason> <notes>` | Process recruitment applications | HI-COMM Only |
 
 ### **Communication Commands**  
 Official communications and announcements.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/vcrequest <user> <channel> <reason>` | Request someone join voice channel | Staff |
-| `/say <message> [embed]` | Make bot send a message | Staff |
-| `/sign <message>` | Send officially signed announcement | Command Staff |
+| `/vcrequest <user> <channel> <reason>` | Request someone join voice channel | SNCO, CO & HI-COMM |
+| `/say <message> [embed]` | Make bot send a message | HI-COMM Only |
+| `/sign <message>` | Send officially signed announcement | HI-COMM Only |
 
 ### **Moderation Commands**
 Military discipline and case management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/beat <user>` | Apply fun disciplinary action with random item | Moderation Staff |
-| `/inactivity <user>` | Send inactivity notice | Moderation Staff |
-| `/caselog <user> <punishment> <reason>` | Create formal case log entry | Moderation Staff |
+| `/beat <user>` | Apply fun disciplinary action with random item | HI-COMM Only |
+| `/inactivity <user>` | Send inactivity notice | Everyone |
+| `/caselog <user> <punishment> <reason>` | Create formal case log entry | SNCO, CO & HI-COMM |
+| `/disciplinary <user> <action> <reason>` | Issue formal disciplinary action | HI-COMM Only |
 
 ### **Utility Commands**
 General bot utilities and information.
@@ -97,9 +100,9 @@ Bot administration and logging management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/testlog` | Test the logging system | Bot Admins |
-| `/setlogchannel` | Configure logging channel | Bot Admins |
-| `/logstatus` | Check logging system status | Bot Admins |
+| `/testlog` | Test the logging system | Bot Owner/Administrators |
+| `/setlogchannel` | Configure logging channel | Bot Owner/Administrators |
+| `/logstatus` | Check logging system status | Bot Owner/Administrators |
 
 ---
 
