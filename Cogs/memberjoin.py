@@ -28,7 +28,7 @@ class memberjoin(commands.Cog):
         image_file = discord.File (fp=bg.image_bytes, filename='welcome.png')  
         
         print(f"Trying to send welcome message to {welcome_channel.name}")
-        await welcome_channel.send(f'Hello there {member.name} head to https://discord.com/channels/1427868958844784763/1427869676830195764 to apply for the NZDF!')  
+        await welcome_channel.send(f'Hello there {member.mention} head to https://discord.com/channels/1276682947763896463/1420634043971538945 to apply for the NZDF!')  
         print(f"Trying to send welcome image")
         await welcome_channel.send(file=image_file)  
 

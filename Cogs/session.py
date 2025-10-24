@@ -98,8 +98,12 @@ class SessionVoteView(View):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("❌ Only server members can vote.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SESSION_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("❌ You don't have permission to vote for sessions.", ephemeral=True)
+        if not config.has_permission(interaction.user, "session"):
+            required_roles = config.get_required_role_mentions("session", interaction.guild)
+            msg = "❌ You don't have permission to vote for sessions."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         if interaction.user.id in self.votes:
             self.votes.remove(interaction.user.id)
@@ -119,18 +123,11 @@ class Session(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SESSION_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('session') or config.ROLE_CONFIG.get('SESSION_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not config.has_permission(interaction.user, "session"):
+            required_roles = config.get_required_role_mentions("session", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         if not interaction.guild:
@@ -190,18 +187,11 @@ class Session(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SESSION_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('session') or config.ROLE_CONFIG.get('SESSION_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not config.has_permission(interaction.user, "session"):
+            required_roles = config.get_required_role_mentions("session", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         if not interaction.guild:
@@ -267,18 +257,11 @@ class Session(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SESSION_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('session') or config.ROLE_CONFIG.get('SESSION_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not config.has_permission(interaction.user, "session"):
+            required_roles = config.get_required_role_mentions("session", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         if not interaction.guild:
@@ -340,18 +323,11 @@ class Session(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SESSION_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('session') or config.ROLE_CONFIG.get('SESSION_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not config.has_permission(interaction.user, "session"):
+            required_roles = config.get_required_role_mentions("session", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         if not interaction.guild:

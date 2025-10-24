@@ -3,7 +3,8 @@ from __future__ import annotations
 import discord
 from discord import app_commands, Permissions
 from discord.ext import commands
-from config import ROLE_CONFIG, MEDIA, has_any_role_ids, media_file
+from config import ROLE_CONFIG, MEDIA, has_any_role_ids, has_permission, get_required_role_mentions, media_file
+import config
 
 class Communication(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -25,8 +26,12 @@ class Communication(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["VC_REQUEST_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+        if not has_permission(interaction.user, "vcrequest"):
+            required_roles = get_required_role_mentions("vcrequest", interaction.guild)
+            msg = f"You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         embed = discord.Embed(
             title="🔊 VC Request",
@@ -61,8 +66,12 @@ class Communication(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SAY_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+        if not has_permission(interaction.user, "say"):
+            required_roles = get_required_role_mentions("say", interaction.guild)
+            msg = f"You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         await interaction.response.defer(ephemeral=True)
 
@@ -88,8 +97,12 @@ class Communication(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["SIGNED_MESSAGE_ALLOWED_ROLES"]):
-            return await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+        if not has_permission(interaction.user, "sign"):
+            required_roles = get_required_role_mentions("sign", interaction.guild)
+            msg = f"You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
+            return await interaction.response.send_message(msg, ephemeral=True)
 
         # Defer ephemerally to avoid command usage log
         await interaction.response.defer(ephemeral=True)

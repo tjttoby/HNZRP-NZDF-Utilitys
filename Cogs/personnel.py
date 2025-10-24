@@ -8,7 +8,7 @@ from typing import Optional
 import config
 from config import (
     ROLE_CONFIG, MEDIA, AVAILABLE_MEDALS, MEDAL_REQUEST_PING_USER,
-    has_any_role_ids, get_highest_role, media_file
+    has_any_role_ids, has_permission, get_required_role_mentions, get_highest_role, media_file
 )
 
 class DischargeConfirmView(View):
@@ -82,18 +82,11 @@ class Personnel(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["MEDAL_REQUEST_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('medal') or config.ROLE_CONFIG.get('MEDAL_REQUEST_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not has_permission(interaction.user, "medal_request"):
+            required_roles = get_required_role_mentions("medal_request", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         embed = discord.Embed(
@@ -181,18 +174,11 @@ class Personnel(commands.Cog):
         if not isinstance(interaction.user, discord.Member):
             return await interaction.response.send_message("This command can only be used by server members.", ephemeral=True)
 
-        if not has_any_role_ids(interaction.user, ROLE_CONFIG["DISCHARGE_ALLOWED_ROLES"]):
-            roles = config.get_command_roles('discharge') or config.ROLE_CONFIG.get('DISCHARGE_ALLOWED_ROLES', [])
-            req = None
-            if roles:
-                mentions = []
-                for r in roles:
-                    role_obj = interaction.guild.get_role(r) if interaction.guild else None
-                    mentions.append(role_obj.mention if role_obj else f"`Role ID: {r}`")
-                req = ", ".join(mentions)
-            msg = "You don't have permission to use this command."
-            if req:
-                msg = f"You don't have permission to use this command. Required role(s): {req}"
+        if not has_permission(interaction.user, "discharge"):
+            required_roles = get_required_role_mentions("discharge", interaction.guild)
+            msg = "❌ You don't have permission to use this command."
+            if required_roles:
+                msg += f" Required roles: {required_roles}"
             return await interaction.response.send_message(msg, ephemeral=True)
 
         highest_role = get_highest_role(interaction.user)
