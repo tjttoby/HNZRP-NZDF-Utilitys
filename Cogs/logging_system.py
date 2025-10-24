@@ -86,10 +86,10 @@ class LoggingSystem(commands.Cog):
         try:
             # Create embed for command log
             color = discord.Color.green() if success else discord.Color.red()
-            status_emoji = "✅" if success else "❌"
+            status_emoji = "🎮" if success else "⚠️"
             
             embed = discord.Embed(
-                title=f"{status_emoji} Command {'Executed' if success else 'Failed'}",
+                title=f"{status_emoji} Command {'Used' if success else 'Error'}",
                 color=color,
                 timestamp=datetime.datetime.utcnow()
             )
@@ -101,25 +101,25 @@ class LoggingSystem(commands.Cog):
                 inline=True
             )
             
-            # Add user info
+            # Add user info - just the ping, no nickname
             user = interaction.user
             embed.add_field(
                 name="User",
-                value=f"{user.mention} ({user.display_name})\nID: `{user.id}`",
+                value=f"{user.mention}",
                 inline=True
             )
             
-            # Add channel info
+            # Add channel info - just the channel, no guild
             if interaction.guild:
                 channel_name = getattr(interaction.channel, 'mention', str(interaction.channel)) if interaction.channel else 'Unknown'
                 embed.add_field(
-                    name="Location",
-                    value=f"**Guild:** {interaction.guild.name}\n**Channel:** {channel_name}",
+                    name="Channel",
+                    value=f"{channel_name}",
                     inline=True
                 )
             else:
                 embed.add_field(
-                    name="Location",
+                    name="Channel",
                     value="Direct Message",
                     inline=True
                 )
