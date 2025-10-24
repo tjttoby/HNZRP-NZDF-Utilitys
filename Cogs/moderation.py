@@ -4,7 +4,7 @@ import discord
 from discord import app_commands, Permissions
 from discord.ext import commands
 import random
-from config import ROLE_CONFIG, MEDIA, BEAT_ITEMS, CHANNEL_CONFIG, has_any_role_ids, has_permission, get_required_role_mentions, media_file
+from config import ROLE_CONFIG, MEDIA, BEAT_ITEMS, CHANNEL_CONFIG, has_any_role_ids, has_permission, get_required_role_mentions, check_channel_restriction, get_output_channel, media_file
 import config
 
 class Moderation(commands.Cog):
@@ -129,8 +129,15 @@ class Moderation(commands.Cog):
         if not interaction.guild:
             return await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
 
-        caselog_channel = interaction.guild.get_channel(CHANNEL_CONFIG["CASELOG_CHANNEL"])
-        if not isinstance(caselog_channel, discord.TextChannel):
+        # Check if command is used in the right channel
+        if isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):
+            allowed, error_msg = check_channel_restriction("caselog", interaction.channel.id)
+            if not allowed:
+                return await interaction.response.send_message(error_msg, ephemeral=True)
+
+        # Get the designated output channel (caselog always goes to caselog channel)
+        output_channel = get_output_channel("caselog", interaction.guild)
+        if not isinstance(output_channel, discord.TextChannel):
             return await interaction.response.send_message("Case log channel not found or not properly configured.", ephemeral=True)
 
         embed = discord.Embed(
@@ -151,7 +158,7 @@ class Moderation(commands.Cog):
                 pass
 
         # Send the embed and create a thread
-        message = await caselog_channel.send(embed=embed, files=files)
+        message = await output_channel.send(embed=embed, files=files)
         thread = await message.create_thread(name=f"Case Evidence - {user.name}", auto_archive_duration=10080)
         await thread.send("Please provide evidence here.")
 

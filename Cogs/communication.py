@@ -3,7 +3,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands, Permissions
 from discord.ext import commands
-from config import ROLE_CONFIG, MEDIA, has_any_role_ids, has_permission, get_required_role_mentions, media_file
+from config import ROLE_CONFIG, MEDIA, has_any_role_ids, has_permission, get_required_role_mentions, check_channel_restriction, media_file
 import config
 
 class Communication(commands.Cog):
