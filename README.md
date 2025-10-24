@@ -16,20 +16,17 @@
 ## ✨ Key Features
 
 ### 🎮 **Session Management**
-- **Democratic session voting** - Community-driven session starts
-- **Session status tracking** - Real-time activity monitoring  
-- **Force online capabilities** - Staff emergency activation
+- **Session voting** - 3 Player vote to start
 - **Activity boost pings** - Encourage participation during sessions
 
 ### 🎖️ **Personnel Administration**
 - **Medal request system** - Award military honors with evidence tracking
-- **Callsign management** - Request and approve tactical callsigns
+- **Callsign management** - Request and approve callsigns
 - **Discharge processing** - Handle personnel departures
-- **Application reviews** - Pass/fail recruitment processing
+- **Application reviews** - Pass/fail recruitment processing result commands
 
 ### 🛡️ **Military Operations**
 - **Case logging** - Document disciplinary actions and incidents
-- **Beat system** - Fun military-style corrections with random items
 - **Inactivity notices** - Automated activity reminders
 - **Voice channel requests** - Coordinate team communications
 
@@ -41,7 +38,6 @@
 ### 📊 **Logging & Monitoring**
 - **Comprehensive command logging** - Track all bot interactions
 - **Error reporting** - Automated issue detection and reporting
-- **Activity monitoring** - User engagement analytics
 
 ---
 
@@ -52,38 +48,38 @@ Commands for managing training sessions and operations.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/sessionvote` | Start a democratic vote to begin a session | Session Staff |
-| `/sessionshutdown` | Officially end the current session | Session Staff |
-| `/fonline` | Force session online without voting (emergency) | Session Staff |
-| `/sessionlowping` | Send activity boost to encourage participation | Session Staff |
+| `/sessionvote` | Start a vote to begin a session | SNCO, NCO, CO & HICOMM |
+| `/sessionshutdown` | Officially end the current session | SNCO, NCO, CO & HICOMM |
+| `/fonline` | Force session online without voting (emergency) | SNCO, NCO, CO & HICOMM |
+| `/sessionlowping` | Send activity boost to encourage participation | SNCO, NCO, CO & HICOMM |
 
 ### **Personnel Commands**
 Military personnel administration and management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/medalrequest <medal>` | Submit a request for military honors | Personnel |
-| `/discharge <reason>` | Submit a discharge request | Authorized Staff |
-| `/callsign` | Request a tactical callsign assignment | Personnel |
-| `/application <result> <user> <reason> <notes>` | Process recruitment applications | Recruitment Staff |
+| `/medalrequest <medal>` | Submit a request for military honors | All NZDF Personnel |
+| `/discharge <reason>` | Submit a discharge request | All NZDF Personnel |
+| `/callsign` | Request a tactical callsign assignment | All NZDF Personnel |
+| `/application <result> <user> <reason> <notes>` | Process recruitment applications | HICOMM |
 
 ### **Communication Commands**  
 Official communications and announcements.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/vcrequest <user> <channel> <reason>` | Request someone join voice channel | Staff |
-| `/say <message> [embed]` | Make bot send a message | Staff |
-| `/sign <message>` | Send officially signed announcement | Command Staff |
+| `/vcrequest <user> <channel> <reason>` | Request someone join voice channel | SNCO, CO & HICOMM |
+| `/say <message> [embed]` | Make bot send a message | HICOMM |
+| `/sign <message>` | Send officially signed announcement | HICOMM |
 
 ### **Moderation Commands**
 Military discipline and case management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/beat <user>` | Apply fun disciplinary action with random item | Moderation Staff |
-| `/inactivity <user>` | Send inactivity notice | Moderation Staff |
-| `/caselog <user> <punishment> <reason>` | Create formal case log entry | Moderation Staff |
+| `/beat <user>` | Apply fun disciplinary action with random item (Joke Command)| HICOMM | 
+| `/inactivity <user>` | Send inactivity notice | Everyone | 
+| `/caselog <user> <punishment> <reason>` | Create formal case log entry | SNCO, CO & HICOMM |
 
 ### **Utility Commands**
 General bot utilities and information.
@@ -97,9 +93,9 @@ Bot administration and logging management.
 
 | Command | Description | Access Level |
 |---------|-------------|--------------|
-| `/testlog` | Test the logging system | Bot Admins |
-| `/setlogchannel` | Configure logging channel | Bot Admins |
-| `/logstatus` | Check logging system status | Bot Admins |
+| `/testlog` | Test the logging system | Bot Admins/Owner |
+| `/setlogchannel` | Configure logging channel | Bot Admins/Owner |
+| `/logstatus` | Check logging system status | Bot Admins/Owner |
 
 ---
 
@@ -107,7 +103,6 @@ Bot administration and logging management.
 
 ### **Smart Permission System**
 - **Role-based access control** - Commands automatically check user permissions
-- **UI visibility management** - Users only see commands they can access
 - **Hierarchical permissions** - Different access levels for different roles
 
 ### **Enhanced User Experience**
@@ -125,27 +120,6 @@ Bot administration and logging management.
 - **NZDF branding** - Consistent visual identity throughout
 - **Military terminology** - Authentic language and procedures
 - **Honor system integration** - Medal and recognition workflows
-
----
-
-## 🛠️ Configuration
-
-The bot uses a centralized configuration system in `config.py` that allows server administrators to:
-
-- **Configure role permissions** for each command category
-- **Set channel destinations** for logging and operations
-- **Customize medal types** and availability
-- **Adjust ping roles** for notifications
-- **Modify disciplinary items** for the beat system
-
-### **Required Permissions**
-The bot requires the following Discord permissions:
-- **Send Messages** - Basic communication
-- **Embed Links** - Rich message formatting  
-- **Manage Messages** - Message management and cleanup
-- **Create Public Threads** - Evidence submission workflows
-- **Mention Everyone** - Role pings for notifications
-- **Use Slash Commands** - Modern command interface
 
 ---
 
@@ -178,13 +152,14 @@ The bot requires the following Discord permissions:
 For bug reports, feature requests, or technical support, please:
 1. Check existing issues on GitHub
 2. Create a detailed issue report  
-3. Contact the developer on discord
+3. Contact the developer on Discord
+4. Email Toby to `tjttoby@gmail.com`
 
 ---
 
 ## 📜 License & Usage
 
-This bot is **custom-built exclusively for HNZRP's NZDF server**. While the code is available for reference and learning, it contains server-specific configurations and branding, and will not work without heavy modification.
+This bot is **custom-built exclusively for HNZRP's NZDF server**. While the code is available for reference and learning, it contains server-specific configurations and branding and will not work without heavy modification.
 
 **Usage Guidelines:**
 - ✅ Learning and educational reference
@@ -212,6 +187,6 @@ Any use of this bot's code without the dev (tobytiwi)'s permission is subject to
 
 ---
 
-**⚡ Built with precision. Deployed with pride. Serving the HNZRP, NZDF community.**
+**⚡ Built with precision. Deployed with pride. Serving the community.**
 
 © Tobytiwi 2025
